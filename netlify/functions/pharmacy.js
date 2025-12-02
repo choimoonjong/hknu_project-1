@@ -1,6 +1,6 @@
 const fetch = require("node-fetch");
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
   const region = event.queryStringParameters.region;
   const serviceKey = process.env.API_KEY;
 

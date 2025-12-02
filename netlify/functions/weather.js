@@ -1,23 +1,25 @@
 const fetch = require("node-fetch");
 
-export const handler = async (event) => {
-  const region = event.queryStringParameters.region;
+exports.handler = async (event) => {
+  const { base_date, base_time, nx, ny } = event.queryStringParameters;
   const serviceKey = process.env.API_KEY;
 
   const url =
-    `http://apis.data.go.kr/B551182/pharmacyInfoService/getParmacyBasisList` +
+    `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst` +
     `?serviceKey=${serviceKey}` +
-    `&Q0=${encodeURIComponent(region)}` +
-    `&numOfRows=5000&pageNo=1`;
+    `&dataType=JSON` +
+    `&base_date=${base_date}` +
+    `&base_time=${base_time}` +
+    `&nx=${nx}&ny=${ny}`;
 
   try {
     const response = await fetch(url);
-    const xml = await response.text();
+    const json = await response.text();
 
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/xml" },
-      body: xml
+      headers: { "Content-Type": "application/json" },
+      body: json
     };
   } catch (err) {
     return {

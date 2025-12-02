@@ -88,7 +88,7 @@ async function handleSearch() {
     document.getElementById("pharmacyCount").innerText = "로드 중…";
 
     // 약국 데이터 요청
-    const response = await fetch(`/api/pharmacy?region=${region}`);
+    const response = await fetch(`/.netlify/functions/pharmacy?region=${region}`);
     const xmlData = await response.text();
 
     pharmacyData = parsePharmacyXML(xmlData);
@@ -153,7 +153,7 @@ async function loadWeather(region) {
     const date = formatDate(new Date());
     const time = "0500";
 
-    const res = await fetch(`/api/weather?base_date=${date}&base_time=${time}&nx=${nx}&ny=${ny}`);
+    const res = await fetch(`/.netlify/functions/weather?base_date=${date}&base_time=${time}&nx=${nx}&ny=${ny}`);
     const json = await res.json();
 
     if (!json.response || !json.response.body) {
