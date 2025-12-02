@@ -1,16 +1,13 @@
 const fetch = require("node-fetch");
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   const region = event.queryStringParameters.region;
-
-  const rawKey = process.env.API_KEY;  // 일반키 그대로
-  const serviceKey = decodeURIComponent(rawKey);  // 서버에서 디코딩
+  const serviceKey = process.env.API_KEY;
 
   const url =
-    `https://apis.data.go.kr/B551182/pharmacyInfoService/getParmacyBasisList` +
+    `http://apis.data.go.kr/B551182/pharmacyInfoService/getParmacyBasisList` +
     `?serviceKey=${serviceKey}` +
     `&Q0=${encodeURIComponent(region)}` +
-    `&Q1=` +   
     `&numOfRows=5000&pageNo=1`;
 
   try {
@@ -19,10 +16,9 @@ exports.handler = async (event) => {
 
     return {
       statusCode: 200,
-      headers: { "Content-Type": "application/xml; charset=utf-8" },
+      headers: { "Content-Type": "application/xml" },
       body: xml
     };
-
   } catch (err) {
     return {
       statusCode: 500,

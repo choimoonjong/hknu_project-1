@@ -1,11 +1,11 @@
 //-------------------------------------------------------------
-// 0. 전역 변수
+// 전역
 //-------------------------------------------------------------
 let map;
 let markers = [];
 let pharmacyData = [];
 
-// 시도별 중심 좌표
+// 시도별 기준 좌표
 const REGION_CENTER = {
     서울: [37.5665, 126.9780],
     부산: [35.1796, 129.0756],
@@ -27,8 +27,6 @@ const REGION_CENTER = {
 };
 
 //-------------------------------------------------------------
-// 초기
-//-------------------------------------------------------------
 window.onload = () => {
     initMap();
     initEvents();
@@ -49,11 +47,12 @@ function initMap() {
 
 //-------------------------------------------------------------
 function initEvents() {
-    document.getElementById("searchBtn").addEventListener("click", handleSearch);
+    document.getElementById("searchBtn")
+        .addEventListener("click", handleSearch);
 }
 
 //-------------------------------------------------------------
-// XML → JS
+// XML Parsing
 //-------------------------------------------------------------
 function parsePharmacyXML(xmlString) {
     const parser = new DOMParser();
@@ -81,54 +80,46 @@ function getText(parent, tag) {
 async function handleSearch() {
     const region = document.getElementById("regionSelect").value;
 
+    // 지도 중심 이동
     const [cLat, cLng] = REGION_CENTER[region];
     map.setCenter(new kakao.maps.LatLng(cLat, cLng));
-    map.setLevel(10);
+    map.setLevel(9);
 
     document.getElementById("pharmacyCount").innerText = "로드 중…";
 
-    // 약국 데이터 로드
+    // 약국 데이터 요청
     const response = await fetch(`/api/pharmacy?region=${region}`);
-
     const xmlData = await response.text();
 
     pharmacyData = parsePharmacyXML(xmlData);
     document.getElementById("pharmacyCount").innerText = pharmacyData.length;
 
-    renderPharmacyMarkers(pharmacyData);
-    renderPharmacyList(pharmacyData);
+    renderMarkers(pharmacyData);
+    renderList(pharmacyData);
 
-    // 날씨 로드
+    // 날씨
     await loadWeather(region);
 }
 
 //-------------------------------------------------------------
-// 지도 마커
-//-------------------------------------------------------------
-function renderPharmacyMarkers(list) {
+function renderMarkers(list) {
     clearMarkers();
 
     list.forEach(p => {
-        const pos = new kakao.maps.LatLng(p.lat, p.lng);
-
         const marker = new kakao.maps.Marker({
-            position: pos,
+            position: new kakao.maps.LatLng(p.lat, p.lng),
             map: map
         });
 
         const info = new kakao.maps.InfoWindow({
             content: `
-                <div style="padding:8px;font-size:13px;">
-                    <b>${p.name}</b><br/>
-                    ${p.addr}<br/>
-                    ${p.tel}
+                <div style="padding:5px;font-size:13px">
+                    <b>${p.name}</b><br>${p.addr}<br>${p.tel}
                 </div>
             `
         });
 
-        kakao.maps.event.addListener(marker, "click", () => {
-            info.open(map, marker);
-        });
+        kakao.maps.event.addListener(marker, "click", () => info.open(map, marker));
 
         markers.push(marker);
     });
@@ -140,15 +131,13 @@ function clearMarkers() {
 }
 
 //-------------------------------------------------------------
-// 리스트 출력
-//-------------------------------------------------------------
-function renderPharmacyList(list) {
+function renderList(list) {
     const ul = document.getElementById("pharmacyList");
     ul.innerHTML = "";
 
     list.forEach(p => {
         const li = document.createElement("li");
-        li.className = "list-group-item small";
+        li.className = "list-group-item";
         li.innerHTML = `<b>${p.name}</b><br>${p.addr}<br>${p.tel}`;
         ul.appendChild(li);
     });
@@ -161,11 +150,10 @@ async function loadWeather(region) {
     const [lat, lng] = REGION_CENTER[region];
     const { nx, ny } = latLonToGrid(lat, lng);
 
-    const baseDate = formatDateYYYYMMDD(new Date());
-    const baseTime = "0500";
+    const date = formatDate(new Date());
+    const time = "0500";
 
-   const res = await fetch(`/api/weather?base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}`);
-
+    const res = await fetch(`/api/weather?base_date=${date}&base_time=${time}&nx=${nx}&ny=${ny}`);
     const json = await res.json();
 
     if (!json.response || !json.response.body) {
@@ -174,8 +162,7 @@ async function loadWeather(region) {
     }
 
     const items = json.response.body.items.item;
-    const getVal = cat =>
-        items.find(x => x.category === cat)?.obsrValue ?? "-";
+    const getVal = cat => items.find(x => x.category === cat)?.obsrValue ?? "-";
 
     document.getElementById("weatherStatus").innerText = "완료";
     document.getElementById("weatherTemp").innerText = getVal("T1H");
@@ -184,18 +171,12 @@ async function loadWeather(region) {
     document.getElementById("weatherWind").innerText = getVal("WSD");
 }
 
-//-------------------------------------------------------------
-function formatDateYYYYMMDD(d) {
-    return (
-        d.getFullYear() +
-        ("0" + (d.getMonth() + 1)).slice(-2) +
-        ("0" + d.getDate()).slice(-2)
-    );
+// 날짜 YYYYMMDD
+function formatDate(d) {
+    return `${d.getFullYear()}${("0" + (d.getMonth() + 1)).slice(-2)}${("0" + d.getDate()).slice(-2)}`;
 }
 
-//-------------------------------------------------------------
-// lat, lon → NX NY 변환
-//-------------------------------------------------------------
+// 기상청 좌표 변환 함수
 function latLonToGrid(lat, lon) {
     const RE = 6371.00877;
     const GRID = 5.0;
@@ -207,16 +188,14 @@ function latLonToGrid(lat, lon) {
     const YO = 136;
 
     const DEGRAD = Math.PI / 180.0;
-
     const re = RE / GRID;
     const slat1 = SLAT1 * DEGRAD;
     const slat2 = SLAT2 * DEGRAD;
     const olon = OLON * DEGRAD;
     const olat = OLAT * DEGRAD;
 
-    let sn =
-        Math.tan(Math.PI * 0.25 + slat2 * 0.5) /
-        Math.tan(Math.PI * 0.25 + slat1 * 0.5);
+    let sn = Math.tan(Math.PI * 0.25 + slat2 * 0.5) /
+             Math.tan(Math.PI * 0.25 + slat1 * 0.5);
     sn = Math.log(Math.cos(slat1) / Math.cos(slat2)) / Math.log(sn);
 
     let sf = Math.tan(Math.PI * 0.25 + slat1 * 0.5);
@@ -225,13 +204,12 @@ function latLonToGrid(lat, lon) {
     let ro = Math.tan(Math.PI * 0.25 + olat * 0.5);
     ro = (re * sf) / Math.pow(ro, sn);
 
-    let ra = Math.tan(Math.PI * 0.25 + lat * DEGRAD * 0.5);
+    let ra = Math.tan(Math.PI * 0.25 + lat * 0.5 * DEGRAD);
     ra = (re * sf) / Math.pow(ra, sn);
 
     let theta = lon * DEGRAD - olon;
-    if (theta > Math.PI) theta -= 2 * Math.PI;
-    if (theta < -Math.PI) theta += 2 * Math.PI;
-
+    if (theta > Math.PI) theta -= 2.0 * Math.PI;
+    if (theta < -Math.PI) theta += 2.0 * Math.PI;
     theta *= sn;
 
     const x = Math.floor(ra * Math.sin(theta) + XO + 0.5);

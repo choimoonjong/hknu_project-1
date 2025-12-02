@@ -1,28 +1,28 @@
 const fetch = require("node-fetch");
 
-exports.handler = async (event) => {
-  const p = event.queryStringParameters;
-
-  const rawKey = process.env.API_KEY;
-  const serviceKey = decodeURIComponent(rawKey);
+export const handler = async (event) => {
+  const region = event.queryStringParameters.region;
+  const serviceKey = process.env.API_KEY;
 
   const url =
-    `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?` +
-    `serviceKey=${serviceKey}&dataType=JSON&base_date=${p.base_date}` +
-    `&base_time=${p.base_time}&nx=${p.nx}&ny=${p.ny}`;
+    `http://apis.data.go.kr/B551182/pharmacyInfoService/getParmacyBasisList` +
+    `?serviceKey=${serviceKey}` +
+    `&Q0=${encodeURIComponent(region)}` +
+    `&numOfRows=5000&pageNo=1`;
 
   try {
     const response = await fetch(url);
-    const json = await response.json();
+    const xml = await response.text();
 
     return {
       statusCode: 200,
-      body: JSON.stringify(json)
+      headers: { "Content-Type": "application/xml" },
+      body: xml
     };
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message })
+      body: err.message
     };
   }
 };
