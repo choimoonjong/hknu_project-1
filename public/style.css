@@ -1,0 +1,22 @@
+body {
+    background-color: #f3f7ff;
+}
+
+/* 지도 스타일 */
+#map {
+    width: 100%;
+    height: 500px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+/* 리스트 영역 스크롤 */
+#pharmacyList {
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+#pharmacyList .list-group-item:hover {
+    background-color: #eef5ff;
+    cursor: pointer;
+}
