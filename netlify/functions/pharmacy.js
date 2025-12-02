@@ -1,10 +1,14 @@
 const fetch = require("node-fetch");
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
   const region = event.queryStringParameters.region;
-  const serviceKey = process.env.API_KEY;   // 노출 금지된 키
 
-  // 약국 정보 API
+  // 일반키 그대로 받아옴
+  const rawKey = process.env.API_KEY;
+
+  // 강제로 디코딩 (Encoding → Decoding 변환)
+  const serviceKey = decodeURIComponent(rawKey);
+
   const url =
     `https://apis.data.go.kr/B551182/pharmacyInfoService/getParmacyBasisList?` +
     `serviceKey=${serviceKey}&Q0=${encodeURIComponent(region)}&numOfRows=5000&pageNo=1`;
