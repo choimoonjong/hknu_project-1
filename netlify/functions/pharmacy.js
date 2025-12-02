@@ -10,6 +10,7 @@ exports.handler = async (event) => {
     `https://apis.data.go.kr/B551182/pharmacyInfoService/getParmacyBasisList` +
     `?serviceKey=${serviceKey}` +
     `&Q0=${encodeURIComponent(region)}` +
+    `&Q1=` +   
     `&numOfRows=5000&pageNo=1`;
 
   try {
