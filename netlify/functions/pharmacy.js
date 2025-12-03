@@ -5,7 +5,7 @@ exports.handler = async (event) => {
   const serviceKey = process.env.API_KEY;
 
   const url =
-    `http://apis.data.go.kr/B551182/pharmacyInfoService/getParmacyBasisList` +
+    `https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyListInfoInqire` +
     `?serviceKey=${serviceKey}` +
     `&Q0=${encodeURIComponent(region)}` +
     `&numOfRows=5000&pageNo=1`;
